@@ -1,53 +1,36 @@
-# 🧠 Médicos 
+# Medico Lab
 
-Sistema de gestão para fisioterapeutas, com foco em cadastro de pacientes, evolução de atendimentos, relatórios personalizados e integração com prontuarios de pagamento.
+Sistema web para médicos, desenvolvido em Django, com foco em gerenciamento de prontuários, evoluções clínicas, receituários, pedidos de exames, atestados e anexos de exames.
 
-## 🚀 Funcionalidades
+Projeto derivado e adaptado do [Fisio_lab](https://github.com/celsoleite38/Fisio_lab) para uso médico.
 
-- Cadastro de pacientes
-- CAdastro de dados clinicos do paciente
-   - Peso, QP, HMA, HPP, ANTECEDENTES PESSOAIS E FAMILIARES, EXAMES FISICOS, EXAMES COMPLEMENTARES DIAGNOSTICO PLANO TERAPEUTICO.
-- Registro de evolução dos atendimentos
-- Geração de relatórios com:
-  - Nome do paciente
-  - Data de nascimento
-  - Data do atendimento
-  - Nome do fisioterapeuta - usuario cadastrado.
-  
-- Autenticação integrada com: Obs:esta integração ainda esta em desenvolvimento
-   - Mercado Pago
-- Painel de assinaturas: Obs:esta integração ainda esta em desenvolvimento
-  - Planos mensais, trimestrais, semestrais e anuais
-  - Webhooks para atualizar status de pagamentos automaticamente
-  - Notificações de expiração por painel e e-mail
+## Funcionalidades principais
 
-## 🛠️ Tecnologias utilizadas
+- Cadastro e gerenciamento de pacientes
+- Prontuário eletrônico com evolução clínica
+- Registro de anamnese / dados iniciais do paciente
+- Evoluções com possibilidade de anexar imagens
+- Emissão de **receituários** (com múltiplos medicamentos)
+- Pedidos de exames
+- Emissão de atestados
+- Anexos de exames (PDF, imagens)
+- Geração de PDF para documentos (receituário, pedido, atestado)
+- Agenda integrada (herdada do projeto original)
+- Autenticação segura com perfil profissional (médico)
 
-- Python / Django
-- HTML + CSS
-- SQLite (ou PostgreSQL)
-- Git e GitHub
-- Integrações com APIs de pagamento # Obs:ainda em desenvolvimento
+## Tecnologias utilizadas
 
-## ⚙️ Como executar o projeto
+- **Backend**: Django 5.2
+- **Frontend**: Bootstrap 4, Font Awesome
+- **Banco de dados**: SQLite (desenvolvimento) / PostgreSQL (recomendado produção)
+- **Bibliotecas principais**:
+  - WeasyPrint (geração de PDF)
+  - Pillow (manipulação de imagens)
+  - Select2 (busca avançada em selects)
+  - jQuery (interatividade)
 
-```bash
-# Clone o repositório
-git clone https://github.com/celsoleite38/fisio-minas.git
+## Requisitos
 
-# Acesse a pasta do projeto
-cd fisio-minas
-
-# Crie e ative um ambiente virtual (opcional, mas recomendado)
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-
-# Instale as dependências
-pip install -r requirements.txt
-
-# Aplique as migrações
-python manage.py migrate
-
-# Execute o servidor de desenvolvimento
-python manage.py runserver
+- Python 3.11 ou superior
+- Git
+- Ambiente virtual (venv ou virtualenv)
