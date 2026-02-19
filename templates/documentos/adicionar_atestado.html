@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2>Novo Atestado</h2>
+    <p>Paciente: {{ paciente.nome }} | Evolução: {{ evolucao.titulo }}</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Salvar Atestado</button>
+        <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

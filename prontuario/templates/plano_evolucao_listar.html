@@ -1,0 +1,94 @@
+{% extends 'base_prontuario.html' %}
+
+{% load static %}
+
+{% block 'prontuario' %}
+
+    {% if messages %}
+        <br>
+        {% for message in messages %}
+            <div class="alert {{message.tags}}">
+                {{message}}
+
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    
+<h1 class="titulo">Evolução - Escolha o Paciente </h1>
+ <!-- Formulário de Busca -->
+    <form method="GET" action="{% url 'prontuario:plano_evolucao_listar' %}">
+        <div class="input-group mb-4">
+            <input type="text" name="q" class="form-control" placeholder="Buscar Paciente pelo nome..." value="{{ request.GET.q }}">
+            <button class="btn btn-primary" type="submit">🔍 Buscar</button>
+            {% if request.GET.q %}
+                <a href="{% url 'prontuario:plano_evolucao_listar' %}" class="btn btn-secondary">Limpar</a>
+            {% endif %}
+        </div>
+    </form>
+
+    <!-- Resultado da Busca -->
+    
+
+    <div class="row">
+        {% for paciente in pacientes%}
+            <div class="col-md-4">
+                <a href="{% url 'prontuario:plano_evolucao' paciente.id %}" class="link-hover">
+                    <div class="card-paciente">
+                        <div class="foto-perfil">
+
+                            {% if paciente.sexo == "Masculino"%}
+                                <img src="{% static 'prontuario/img/perfil2.png' %}">
+                            {% else %}
+                                <img src="{% static 'prontuario/img/perfil1.png' %}">
+                            {% endif %}
+                        </div>
+                        <br>
+                        <p class="dados">{{paciente.nome}}</p>
+                        <p class="dados">{{paciente.cpf}}</p>
+                        <p class="dados">{{paciente.datanascimento}}</p>
+                        <div class="paciente">
+                            <p class="dados">
+                                <span class="dataNascimento" hidden>{{ paciente.datanascimento|date:"Y-m-d" }}</span>
+                            </p>
+                            <p class="dados"> <span class="idade"></span> anos</p>
+                            
+                        </div>
+    
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                // Seleciona todos os blocos de pacientes
+                                const pacientes = document.querySelectorAll('.paciente');
+                                
+                                pacientes.forEach(paciente => {
+                                    const dataNascStr = paciente.querySelector('.dataNascimento').textContent;
+                                    const dataNasc = new Date(dataNascStr);
+                                    const hoje = new Date();
+                                    
+                                    let idade = hoje.getFullYear() - dataNasc.getFullYear();
+                                    const mesAtual = hoje.getMonth();
+                                    const mesNasc = dataNasc.getMonth();
+                                    
+                                    // Ajuste se ainda não fez aniversário este ano
+                                    if (mesNasc > mesAtual || 
+                                        (mesNasc === mesAtual && hoje.getDate() < dataNasc.getDate())) {
+                                        idade--;
+                                    }
+                                    
+                                    // Insere a idade no campo correto
+                                    paciente.querySelector('.idade').textContent = idade;
+                                });
+                            });
+                        </script>
+
+                    </div>
+
+                </a>
+                <br>
+            </div>
+
+        {% endfor %}
+    </div>
+{% endblock%}
+
+evolucao = evolucao.evolucao.

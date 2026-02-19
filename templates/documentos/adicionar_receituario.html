@@ -1,0 +1,122 @@
+{% extends 'base_prontuario.html' %}
+
+{% block title %}Novo Receituário{% endblock %}
+
+{% block 'prontuario' %}
+
+    <!-- CSS Select2 para busca bonita -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <div class="container mt-4">
+        <h2>Novo Receituário</h2>
+
+        <div class="alert alert-info mb-4">
+            <strong>Paciente:</strong> {{ paciente.nome }} | <strong>Evolução:</strong> {{ evolucao.titulo }}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Observações gerais -->
+            <div class="form-group mb-4">
+                {{ form.observacoes_gerais.label_tag }}
+                {{ form.observacoes_gerais }}
+            </div>
+
+            <!-- Formset de itens -->
+            <h4 class="mt-5 mb-3">Medicamentos</h4>
+            {{ formset.management_form }}
+
+            <div id="items-container">
+                {% for form in formset %}
+                <div class="border p-4 mb-4 rounded item-receita bg-light">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Medicamento</label>
+                            {{ form.medicamento }}
+                        </div>
+                        <div class="col-md-3">
+                            <label>Dosagem</label>
+                            {{ form.dosagem }}
+                        </div>
+                        <div class="col-md-2">
+                            <label>Quantidade</label>
+                            {{ form.quantidade }}
+                        </div>
+                        <div class="col-md-3">
+                            <label>Posologia</label>
+                            {{ form.posologia }}
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        {{ form.observacoes_item.label_tag }}
+                        {{ form.observacoes_item }}
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger mt-3 delete-item">Remover</button>
+                    {{ form.DELETE }}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Botão adicionar -->
+            <button type="button" class="btn btn-outline-primary mb-4" id="add-item">
+                <i class="fas fa-plus"></i> Adicionar outro medicamento
+            </button>
+
+            <div class="d-flex justify-content-between mt-5">
+                <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary btn-lg px-5">Cancelar</a>
+                <button type="submit" class="btn btn-success btn-lg px-5">Salvar Receituário</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Scripts no final -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Inicializa Select2 em todos os medicamentos
+            $('select').select2({
+                placeholder: "Busque o medicamento...",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Adicionar novo item
+            $('#add-item').on('click', function() {
+                let totalForms = parseInt($('#id_form-TOTAL_FORMS').val());
+                let newForm = $('.item-receita:first').clone(true, true);
+
+                // Atualiza nomes e IDs dos campos
+                newForm.find('input, select, textarea').each(function() {
+                    let name = $(this).attr('name');
+                    if (name) {
+                        let newName = name.replace('-0-', '-' + totalForms + '-');
+                        $(this).attr('name', newName);
+                        let id = 'id_form-' + totalForms + '-' + name.split('-')[2];
+                        $(this).attr('id', id);
+                        // Atualiza label for
+                        newForm.find('label[for="' + name + '"]').attr('for', id);
+                    }
+                });
+
+                // Re-inicializa Select2
+                newForm.find('select').select2();
+
+                $('#items-container').append(newForm);
+                $('#id_form-TOTAL_FORMS').val(totalForms + 1);
+            });
+
+            // Remover item
+            $(document).on('click', '.delete-item', function() {
+                if ($('.item-receita').length > 1) {
+                    $(this).closest('.item-receita').remove();
+                    let total = parseInt($('#id_form-TOTAL_FORMS').val());
+                    $('#id_form-TOTAL_FORMS').val(total - 1);
+                }
+            });
+        });
+    </script>
+
+{% endblock %}

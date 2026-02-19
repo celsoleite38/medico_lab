@@ -1,0 +1,18 @@
+{% extends 'base_prontuario.html' %}
+<br> 
+{% block title %}Novo Pedido de Exame - {{ paciente.nome }}{% endblock %}
+<br>
+{% block 'prontuario' %}
+    <div class="evolucao">
+        
+        <h2>Novo Pedido de Exame</h2>
+        <p><strong>Paciente:</strong> {{ paciente.nome }} | <strong>Evolução:</strong> {{ evolucao.titulo }}</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary">Voltar</a>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2>Anexar Exame</h2>
+    <p>Paciente: {{ paciente.nome }} | Evolução: {{ evolucao.titulo }}</p>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Anexar</button>
+        <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

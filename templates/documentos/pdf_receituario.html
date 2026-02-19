@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm 1.2cm;
+            @top-center {
+                content: "Dr(a). {{ medico.get_full_name|default:medico.username }} - CRM XXXX-XX";
+                font-size: 11pt;
+                font-weight: bold;
+            }
+            @top-right {
+                content: "Data: {{ today|date:'d/m/Y' }}";
+                font-size: 10pt;
+            }
+        }
+        body { font-family: Arial, sans-serif; font-size: 11pt; }
+        h1 { text-align: center; margin-bottom: 20px; }
+        .paciente-info { margin-bottom: 20px; }
+        .medicamentos { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Receituário</h1>
+    
+    <div class="paciente-info">
+        <strong>Paciente:</strong> {{ paciente.nome }}<br>
+        <strong>Data de Nascimento:</strong> {{ paciente.datanascimento|date:'d/m/Y' }}<br>
+        <strong>Evolução em:</strong> {{ receituario.evolucao.data_criacao|date:'d/m/Y' }}
+    </div>
+    
+    <h3>Prescrição:</h3>
+    <div class="medicamentos">
+        {{ receituario.medicamentos|linebreaks }}
+    </div>
+    
+    {% if receituario.posologia %}
+    <h3>Posologia:</h3>
+    <p>{{ receituario.posologia|linebreaks }}</p>
+    {% endif %}
+    
+    {% if receituario.observacoes %}
+    <h3>Observações:</h3>
+    <p>{{ receituario.observacoes|linebreaks }}</p>
+    {% endif %}
+    
+    <div style="margin-top: 60px; text-align: center;">
+        <p>___________________________________________</p>
+        <p>{{ medico.get_full_name|default:medico.username }}</p>
+    </div>
+</body>
+</html>

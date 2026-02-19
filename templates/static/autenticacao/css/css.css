@@ -1,0 +1,100 @@
+.sidebar{
+    background: linear-gradient(to bottom, #4cc099, #0babf5) ;
+      
+    height: 100vh;
+    color: rgb(36, 28, 28);
+} 
+.logo_sidebar{
+    text-align: center;
+}
+.img_logo_sidebar{
+    width: 100%;
+}
+
+.segunda_logo {
+    margin-top: 145px; /* Espaço entre as logos */
+    margin-bottom: 15px;
+    width: 320px; 
+    height: 460px;
+     margin-left: -55px; /* Move para direita */
+    margin-right: auto;
+}
+
+.area_cadastrar{
+    margin-top: 8%;
+    margin-left: 15%;
+    width: 70%;
+    
+}
+.titulo{
+    font-weight: bold;
+}
+.sub-titulo{
+    color: rgba(0, 0, 0, 1);
+}
+.input-form{
+    margin-top: 15px;
+    width: 100%;
+    padding: 5px;
+    outline: 0;
+}
+.input-form:focus{
+    border: 2px solid #4cc099 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+}
+.bold{
+    font-weight: bold;
+}
+.btn-first{
+    border: 2px solid #10B981;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 25px;
+    background-color: #10B981;
+    color: white;
+    font-weight: bold;
+}
+    
+.login-extra {
+  display: flex;
+  flex-wrap: wrap;           /* Permite que os botões quebrem linha em telas pequenas */
+  gap: 10px;                 /* Espaço entre botões e textos */
+  align-items: center;
+  justify-content: center;   /* Centraliza no centro */
+  text-align: center;
+  margin-top: 20px;
+}
+
+.login-extra p {
+  flex: 1 1 100%;            /* Garante que o texto ocupe linha completa no mobile */
+  margin: 0;
+  font-weight: 600;
+}
+
+.btn-extra {
+  background-color: #00b67a;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.btn-extra:hover {
+  background-color: #009e6a;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+  .btn-extra {
+    width: 100%;             /* Ocupa largura total no celular */
+    text-align: center;
+  }
+}
+
+body {
+    background: linear-gradient(to right, #52bff1, #ffffffff);
+    font-family: 'Segoe UI', sans-serif;
+}

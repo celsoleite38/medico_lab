@@ -1,0 +1,56 @@
+{% extends 'base_prontuario.html' %}
+{% load static %}
+{% block 'prontuario' %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Selecionar Evoluções para Impressão</h2>
+
+        <form method="post" action="{% url 'prontuario:imprimir_evolucoes' paciente.id %}"> {% csrf_token %}
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-outline-success">
+                    <strong>🖨️ Imprimir Selecionadas</strong>
+                </button>
+            </div>
+
+            <table class="table table-bordered tabela-selecao-evolucao">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="col-checkbox">
+                            <input type="checkbox" id="select-all">
+                        </th>
+                        <th class="col-data">Data do Registro</th>
+                        <th class="col-titulo">Titulo</th>
+                        <th class="col-evolucao">Evolução</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evolucao in evolucoes %}
+                        <tr>
+                            <td class="col-checkbox">
+                                <input type="checkbox" name="evolucoes" value="{{ evolucao.id }}">
+                            </td>
+                            <td class="col-data">{{ evolucao.data_criacao|date:"d/m/Y" }}</td>
+                            <td class="col-titulo">{{ evolucao.titulo }}</td>
+                            <td class="col-evolucao conteudo-evolucao-tabela">{{ evolucao.evolucao}}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">Nenhuma evolução registrada para este paciente.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const selectAll = document.getElementById("select-all");
+            const checkboxes = document.querySelectorAll('input[name="evolucoes"]');
+
+            selectAll.addEventListener("change", function () {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block 'head' %}
+    <link rel="stylesheet" href="{% static 'prontuario/css/css.css' %}">
+    <style>
+        /* Estilos responsivos específicos para tablets */
+        @media (max-width: 1024px) {
+            .col-md-2 {
+                width: 100%;
+                order: 2;
+            }
+            
+            .col-md-8 {
+                width: 100%;
+                order: 1;
+            }
+            
+            .navbar-brand {
+                font-size: 14px;
+            }
+            
+            .navbar-brand font {
+                font-size: 14px !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 0 10px;
+            }
+            
+            .navbar-brand {
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block 'body' %}
+    <div class="container-fluid">
+        <div class="row flex-column flex-md-row">
+            <!-- Sidebar - Tablets: vai para baixo -->
+            <div class="col-12 col-md-2 col-lg-2 order-2 order-md-1">
+                <br>
+                
+                <a href="{% url 'agenda:calendario' %}" style="width: 100%" class="link-lateral">
+                    <div class="card-lateral">
+                        <img src="{% static 'prontuario/img/calendarwsf.png' %}"><br>
+                        <h4>Agenda</h4>
+                    </div>
+                </a>
+                <br>
+                <a href="{% url 'prontuario:pacientes' %}" class="link-lateral">
+                    <div class="card-lateral">
+                        <img src="{% static 'prontuario/img/paciente.png' %}">
+                        <h4>Pacientes</h4>
+                    </div>
+                </a>
+                <br>
+                <a href="{% url 'prontuario:dados_paciente_listar' %}" class="link-lateral">
+                    <div class="card-lateral">
+                        <img src="{% static 'prontuario/img/dados_paciente.png' %}">
+                        <h4>Anamnese</h4>
+                    </div>
+                </a>
+                <br>
+                <a href="{% url 'prontuario:plano_evolucao_listar' %}"  class="link-lateral">
+                    <div class="card-lateral">
+                        <img src="{% static 'prontuario/img/plano_alimentar.png' %}">
+                        <h4>Prontuário</h4>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Conteúdo principal - Tablets: vai para cima -->
+            <div class="col-12 col-md-10 col-lg-8 order-1 order-md-2">
+                {% if avisos_nao_lidos %}
+                    <div class="container mt-3">
+                        <div class="alert alert-info shadow-sm">
+                        <ul class="mb-0">
+                            {% for aviso_usuario in avisos_nao_lidos %}
+                            <li class="mb-2">
+                                <strong>{{ aviso_usuario.aviso.titulo }}</strong> — {{ aviso_usuario.aviso.mensagem }}
+                                <a href="{% url 'marcar_aviso_lido' aviso_usuario.pk %}" class="btn btn-warning btn-primary ms-2">Marcar como lido</a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        </div>
+                    </div>
+                {% endif %}
+                {% block 'prontuario' %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
