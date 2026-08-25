@@ -1,0 +1,84 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Resultado da Análise Clínica</h3>
+    <p>Paciente: <strong>{{ paciente.nome }}</strong></p>
+
+    <div class="mb-3">
+        <strong>Sintomas informados:</strong>
+        {% for s in sintomas_selecionados %}
+            <span class="badge badge-info">{{ s.nome }}</span>
+        {% endfor %}
+    </div>
+
+    {% if resultados %}
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="finalizar">
+        <input type="hidden" name="analise_id" value="{{ analise.id }}">
+
+        <h5>Causas Prováveis (ordenadas por relevância)</h5>
+
+        {% for r in resultados %}
+        <div class="card mb-3 {% if forloop.first %}border-success{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center {% if forloop.first %}bg-success text-white{% endif %}">
+                <div>
+                    <input type="radio" name="condicao_escolhida" value="{{ r.condicao }}"
+                        {% if forloop.first %}checked{% endif %} id="cond_{{ r.condicao }}">
+                    <label for="cond_{{ r.condicao }}" class="mb-0">
+                        <strong>{{ r.condicao_obj.nome }}</strong>
+                        <small>({{ r.qtd_match }}/{{ r.qtd_total }} sintomas | peso: {{ r.peso_total }})</small>
+                    </label>
+                </div>
+                {% if forloop.first %}
+                <span class="badge badge-warning">Sugestão principal</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if r.condicao_obj.cid %}
+                <p class="mb-2"><strong>CID:</strong> {{ r.condicao_obj.cid }}</p>
+                {% endif %}
+
+                {% if r.condicao_obj.descricao %}
+                <p class="mb-2">{{ r.condicao_obj.descricao }}</p>
+                {% endif %}
+
+                {% if r.sugestoes_exames %}
+                <h6>Exames sugeridos:</h6>
+                <ul>
+                {% for ex in r.sugestoes_exames %}
+                    <li>{{ ex.exame_nome }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if r.sugestoes_meds %}
+                <h6>Medicamentos sugeridos:</h6>
+                <ul>
+                {% for med in r.sugestoes_meds %}
+                    <li><strong>{{ med.med_nome }}</strong>
+                    {% if med.posologia_sugerida %} — <em>{{ med.posologia_sugerida }}</em>{% endif %}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" name="aceitou_sugestao" id="aceitou" checked>
+            <label class="form-check-label" for="aceitou">
+                Aceito a principal sugestão do sistema (peso ajustado automaticamente)
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-success">Registrar e Aprender</button>
+        <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary">Fechar sem registrar</a>
+    </form>
+
+    {% else %}
+    <div class="alert alert-info">Nenhuma condição encontrada para os sintomas informados.</div>
+    <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary">Voltar</a>
+    {% endif %}
+</div>
+{% endblock %}

@@ -70,8 +70,32 @@
                 <br>
                 <a href="{% url 'prontuario:plano_evolucao_listar' %}"  class="link-lateral">
                     <div class="card-lateral">
-                        <img src="{% static 'prontuario/img/plano_alimentar.png' %}">
-                        <h4>Prontuário</h4>
+                        <!--<img src="{% static 'prontuario/img/plano_alimentar.png' %}">-->
+                        <h4>📋 Prontuário</h4>
+                    </div>
+                </a>
+                <br>
+                <a href="{% url 'receituario:lista_receitas' %}" class="link-lateral">
+                    <div class="card-lateral">
+                        <h4>📋 Receituário</h4>
+                    </div>
+                </a>
+                <br>
+                <a href="{% url 'exames:lista_pedidos' %}" class="link-lateral">
+                    <div class="card-lateral">
+                        <h4>🔬 Pedidos Exames</h4>
+                    </div>
+                </a>
+                <br>
+                <a href="{% url 'atestados:lista_atestados' %}" class="link-lateral">
+                    <div class="card-lateral">
+                        <h4>📄 Atestados</h4>
+                    </div>
+                </a>
+                <br>
+                <a href="{% url 'exames:lista_resultados' %}" class="link-lateral">
+                    <div class="card-lateral">
+                        <h4>📊 Resultados</h4>
                     </div>
                 </a>
             </div>

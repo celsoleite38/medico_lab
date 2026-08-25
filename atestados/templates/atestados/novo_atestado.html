@@ -1,0 +1,21 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Novo Atestado: {{ modelo.nome }}</h3>
+    <p>Paciente: <strong>{{ paciente.nome }}</strong> | Evolução: {{ evolucao.titulo }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<small class="form-text text-muted">{{ field.help_text }}</small>{% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary">Emitir Atestado</button>
+        <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

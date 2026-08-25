@@ -7,7 +7,6 @@
     <div class="container mt-4">
         <h2 class="titulo">Evolução Clínica</h2>
 
-        <!-- Card da evolução -->
         <div class="evolucao">
             <div class="head-evolucao" style="font-weight: normal; font-family: Verdana, sans-serif;">
                 <h5>Paciente: {{ paciente.nome }} | Data: {{ evolucao.data_criacao|date:"d/m/Y" }}</h5>
@@ -15,17 +14,24 @@
             <div class="card-body">
                 <h6 class="card-subtitle mb-2">{{ evolucao.titulo }}</h6>
                 <p class="body-evolucao">{{ evolucao.evolucao|linebreaks }}</p>
-                
                 {% if evolucao.imagem %}
                 <img src="{{ evolucao.imagem.url }}" alt="Foto da evolução" class="img-fluid rounded mb-3" style="max-height: 400px;">
                 {% endif %}
             </div>
         </div>
-<br>
-        <!-- Tabs -->
+
+        <div class="mt-3 mb-4">
+            <a href="{% url 'sugestoes:analise_clinica' evolucao.id %}" class="btn btn-warning">
+                <i class="fas fa-brain"></i> Análise Clínica Assistida
+            </a>
+            <a href="{% url 'exames:upload_resultado' paciente.id %}" class="btn btn-info">
+                <i class="fas fa-file-upload"></i> Anexar Resultado de Exame
+            </a>
+        </div>
+
         <ul class="nav nav-tabs fichario mb-0" id="documentosTab" role="tablist">
-            <li class="nav-item ">
-                <a class="nav-link active " id="receituarios-tab" data-toggle="tab" href="#receituarios" role="tab">
+            <li class="nav-item">
+                <a class="nav-link active" id="receituarios-tab" data-toggle="tab" href="#receituarios" role="tab">
                     <i class="fas fa-prescription mr-2"></i> Receituários
                 </a>
             </li>
@@ -40,8 +46,8 @@
                 </a>
             </li>
             <li class="nav-item mx-2">
-                <a class="nav-link d-flex align-items-center" id="exames-tab" data-toggle="tab" href="#exames" role="tab">
-                    <i class="fas fa-file-upload mr-2"></i> Exames Anexados
+                <a class="nav-link d-flex align-items-center" id="resultados-tab" data-toggle="tab" href="#resultados" role="tab">
+                    <i class="fas fa-file-upload mr-2"></i> Resultados
                 </a>
             </li>
         </ul>
@@ -49,82 +55,64 @@
         <div class="tab-content" id="documentosTabContent">
             <!-- Receituários -->
             <div class="tab-pane fade show active" id="receituarios" role="tabpanel">
-                <a href="{% url 'documentos:adicionar_receituario' evolucao.id %}" class="btn btn-success mb-3">+ Novo Receituário</a>
-                {% if receituarios %}
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Medicamentos (resumo)</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for rec in receituarios %}
-                        <tr>
-                            <td>{{ rec.data_emissao|date:"d/m/Y" }}</td>
-                            <td>{{ rec.medicamentos|truncatewords:10 }}</td>
-                            <td>
-                                <a href="{% url 'documentos:pdf_receituario' rec.id %}" class="btn btn-sm btn-primary">PDF</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-muted">Nenhum receituário cadastrado para esta evolução.</p>
-                {% endif %}
+                <a href="{% url 'receituario:nova_receita' evolucao.id %}" class="btn btn-success mb-3">+ Nova Receita</a>
+                {% for rec in evolucao.receituarios.all %}
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <span>Receita {{ rec.id }} — {{ rec.data_emissao|date:"d/m/Y" }}</span>
+                        <a href="{% url 'receituario:receita_pdf' rec.id %}" class="btn btn-sm btn-primary">PDF</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">Nenhuma receita cadastrada para esta evolução.</p>
+                {% endfor %}
             </div>
 
             <!-- Pedidos de Exames -->
             <div class="tab-pane fade" id="pedidos" role="tabpanel">
-                <a href="{% url 'documentos:adicionar_pedido_exame' evolucao.id %}" class="btn btn-success mb-3">+ Novo Pedido</a>
-                {% if pedidos_exames %}
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Exames solicitados (resumo)</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for pedido in pedidos_exames %}
-                        <tr>
-                            <td>{{ pedido.data_pedido|date:"d/m/Y" }}</td>
-                            <td>{{ pedido.exames_solicitados|truncatewords:10 }}</td>
-                            <td>
-                                <a href="{% url 'documentos:pdf_pedido_exame' pedido.id %}" class="btn btn-sm btn-primary">PDF</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
+                <a href="{% url 'exames:novo_pedido_exame' evolucao.id %}" class="btn btn-success mb-3">+ Novo Pedido</a>
+                {% for pedido in evolucao.pedidos_exames.all %}
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <span>Pedido {{ pedido.id }} — {{ pedido.data_pedido|date:"d/m/Y" }} — {{ pedido.resumo_exames|truncatewords:10 }}</span>
+                        <a href="{% url 'exames:pedido_exame_pdf' pedido.id %}" class="btn btn-sm btn-primary">PDF</a>
+                    </div>
+                </div>
+                {% empty %}
                 <p class="text-muted">Nenhum pedido de exame cadastrado.</p>
-                {% endif %}
+                {% endfor %}
             </div>
 
             <!-- Atestados -->
             <div class="tab-pane fade" id="atestados" role="tabpanel">
-                <!-- <a href="{% url 'documentos:adicionar_atestado' evolucao.id %}" class="btn btn-success mb-3">+ Novo Atestado</a> -->
-                <p class="text-muted">Atestados em desenvolvimento</p>
-                {% if atestados %}
-                <!-- tabela -->
-                {% else %}
+                <a href="{% url 'atestados:modelos_atestado' %}" class="btn btn-success mb-3">+ Novo Atestado</a>
+                {% for at in evolucao.atestados.all %}
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <span>{{ at.modelo.nome }} — {{ at.data_emissao|date:"d/m/Y" }}</span>
+                        <a href="{% url 'atestados:atestado_pdf' at.id %}" class="btn btn-sm btn-primary">PDF</a>
+                    </div>
+                </div>
+                {% empty %}
                 <p class="text-muted">Nenhum atestado emitido.</p>
-                {% endif %}
+                {% endfor %}
             </div>
 
-            <!-- Exames Anexados -->
-            <div class="tab-pane fade" id="exames" role="tabpanel">
-                <!-- <a href="{% url 'documentos:adicionar_exame_anexado' evolucao.id %}" class="btn btn-success mb-3">+ Anexar Exame</a> -->
-                <p class="text-muted">Anexos em desenvolvimento</p>
-                {% if exames_anexados %}
-                <!-- lista -->
-                {% else %}
-                <p class="text-muted">Nenhum exame anexado ainda.</p>
-                {% endif %}
+            <!-- Resultados de Exames -->
+            <div class="tab-pane fade" id="resultados" role="tabpanel">
+                <a href="{% url 'exames:upload_resultado' paciente.id %}" class="btn btn-success mb-3">+ Anexar Resultado</a>
+                {% for res in paciente.resultados_exames.all %}
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <span>{{ res.titulo }} — {{ res.criado_em|date:"d/m/Y" }}
+                        {% if res.tem_alertas %}<span class="badge badge-danger">⚠</span>{% endif %}
+                        </span>
+                        <a href="{% url 'exames:ver_resultado' res.id %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">Nenhum resultado anexado.</p>
+                {% endfor %}
             </div>
         </div>
 
@@ -142,12 +130,10 @@
         border: none;
         margin-right: 4px;
     }
-
-    #receituarios-tab { background: #4d9c5f; } /* verde para receituário */
-    #pedidos-tab     { background: #007bff; } /* azul para pedidos */
-    #atestados-tab   { background: #dc3545; } /* vermelho para atestados */
-    #exames-tab      { background: #6c757d; } /* cinza para exames */
-
+    #receituarios-tab { background: #4d9c5f; }
+    #pedidos-tab     { background: #007bff; }
+    #atestados-tab   { background: #dc3545; }
+    #resultados-tab  { background: #6c757d; }
     .tab-pane {
         background: rgb(255, 255, 255);
         border: 1px solid #dee2e6;
@@ -156,12 +142,10 @@
         padding: 25px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
-
     .tab-pane.active {
         border-color: inherit;
         border-top-color: transparent;
     }
 </style>
-
 
 {% endblock %}

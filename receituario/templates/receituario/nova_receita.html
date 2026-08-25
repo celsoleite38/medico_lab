@@ -1,0 +1,85 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Nova Receita Médica</h3>
+    <p>Paciente: <strong>{{ paciente.nome }}</strong> | Evolução: {{ evolucao.titulo }}</p>
+
+    <form method="POST" id="form-receita">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h5 class="mt-4">Medicamentos</h5>
+        {{ formset.management_form }}
+        <div id="itens-receita">
+            {% for item_form in formset %}
+            <div class="card mb-3 item-receita" data-index="{{ forloop.counter0 }}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label>Medicamento</label>
+                            <input type="text" class="form-control busca-med" placeholder="Buscar (favoritos primeiro)..."
+                                   autocomplete="off">
+                            <div class="resultados-med list-group mt-1"></div>
+                            <input type="hidden" name="{{ item_form.prefix }}-medicamento" value="{{ item_form.instance.medicamento_id|default:'' }}" class="med-id">
+                            {% if item_form.instance.medicamento %}
+                            <small class="text-success">{{ item_form.instance.medicamento.nome }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2">
+                            <label>Dosagem</label>
+                            {{ item_form.dosagem }}
+                        </div>
+                        <div class="col-md-2">
+                            <label>Quantidade</label>
+                            {{ item_form.quantidade }}
+                        </div>
+                        <div class="col-md-3">
+                            <label>Posologia</label>
+                            {{ item_form.posologia }}
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            {{ item_form.DELETE }}
+                        </div>
+                    </div>
+                    {{ item_form.id }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Gerar Receita</button>
+        <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary mt-3">Cancelar</a>
+    </form>
+</div>
+
+<script>
+document.querySelectorAll('.busca-med').forEach(input => {
+    input.addEventListener('input', function() {
+        const container = this.closest('.item-receita');
+        const resultados = container.querySelector('.resultados-med');
+        const q = this.value;
+        if (q.length < 2) { resultados.innerHTML = ''; return; }
+
+        fetch(`/receituario/buscar/?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                resultados.innerHTML = '';
+                data.forEach(med => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action d-flex justify-content-between';
+                    const star = med.uso_count > 5 ? '⭐ ' : '';
+                    btn.innerHTML = `<span>${star}${med.nome} <small class="text-muted">${med.principio_ativo}</small></span>
+                        <span class="badge badge-primary">${med.uso_count}x</span>`;
+                    btn.onclick = () => {
+                        container.querySelector('.med-id').value = med.id;
+                        input.value = med.nome;
+                        resultados.innerHTML = '';
+                    };
+                    resultados.appendChild(btn);
+                });
+            });
+    });
+});
+</script>
+{% endblock %}

@@ -6,10 +6,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 
-SECRET_KEY = 'django-insecure-x+)qu%0yl70^8$_ovlc&61-3#@84*3mb-ffc--5+zbpufvz2&$'
+# SEGURANÇA: segredos vêm de variáveis de ambiente.
+# Gere uma nova chave com: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-somente-para-desenvolvimento-troque-em-producao')
 
-
-DEBUG = True
+# DEBUG só deve ser ligado em desenvolvimento (padrão: desligado em produção)
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'sim')
 
 ALLOWED_HOSTS = ['medicos.innosoft.com.br', 'localhost', '127.0.0.1']
 
@@ -24,14 +26,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'evolucoes.apps.EvolucoesConfig',
-    'documentos.apps.DocumentosConfig',
     'autenticacao',
     'prontuario',
     'agenda',
     'notificacoes',
+    'exames',
+    'receituario',
+    'atestados',
+    'sugestoes',
     'import_export',
     'paginas_vendas'
-    
+
 ]
 
 MIDDLEWARE = [
@@ -139,17 +144,28 @@ MESSAGE_TAGS = {
 }
 
 #email
+# Credenciais vêm de variáveis de ambiente — NUNCA coloque senha no código.
+# Em desenvolvimento, comente o EMAIL_BACKEND SMTP e use o backend de console:
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'josecelsoleite@gmail.com'
-EMAIL_HOST_PASSWORD = 'qutc nfnu jgyc ivjf'
+if os.environ.get('EMAIL_HOST_USER'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    EMAIL_HOST_USER = ''
+    EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'Medicos-Innosoft <noreply@medicosinnosoft.com.br>'
 EMAIL_FAIL_SILENTLY = False
+
+# Integrações opcionais (deixe vazias se não usar)
+WHATSAPP_TOKEN = os.environ.get('WHATSAPP_TOKEN', '')
+WHATSAPP_BUSINESS_ID = os.environ.get('WHATSAPP_BUSINESS_ID', '')
+MERCADO_PAGO_ACCESS_TOKEN = os.environ.get('MERCADO_PAGO_ACCESS_TOKEN', '')
 
 LOGIN_URL = '/auth/logar/'
 LOGIN_REDIRECT_URL = '/prontuario/pacientes/'

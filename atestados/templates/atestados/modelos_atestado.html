@@ -1,0 +1,29 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Modelos de Atestado</h3>
+    <p>{% if paciente_id %}Paciente ID: {{ paciente_id }} — {% endif %}Escolha o tipo de atestado:</p>
+    <div class="list-group">
+        {% for modelo in modelos %}
+        <div class="list-group-item">
+            <h5 class="mb-1">{{ modelo.nome }}</h5>
+            <p class="mb-1 text-muted">{{ modelo.descricao }}</p>
+            <small class="text-muted">
+                {% if modelo.requer_dias %}⏱ Dias de afastamento | {% endif %}
+                {% if modelo.requer_periodo %}📅 Período | {% endif %}
+                {% if modelo.requer_cid %}📋 CID-10 | {% endif %}
+            </small>
+            <div class="mt-2">
+                {% if paciente_id %}
+                <a href="{% url 'atestados:novo_atestado_paciente' paciente_id=paciente_id modelo_id=modelo.id %}" class="btn btn-primary btn-sm">Emitir</a>
+                {% else %}
+                <a href="{% url 'atestados:novo_atestado' evolucao_id=0 modelo_id=modelo.id %}" class="btn btn-primary btn-sm">Emitir (selecione paciente)</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">Nenhum modelo de atestado disponível.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

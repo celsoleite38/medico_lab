@@ -1,0 +1,30 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Resultados de Exames</h3>
+
+    {% for res in resultados %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title mb-1">
+                        <a href="{% url 'prontuario:dados_paciente' id=res.paciente.id %}">{{ res.paciente.nome }}</a>
+                    </h5>
+                    <small class="text-muted">{{ res.titulo }} — {{ res.criado_em|date:"d/m/Y" }}</small>
+                    {% if res.resumo_leitura %}
+                    <p class="mt-2 mb-1 text-muted" style="white-space:pre-line;font-size:13px;">{{ res.resumo_leitura|truncatewords:30 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if res.tem_alertas %}<span class="badge badge-danger mr-2">⚠ Alertas</span>{% endif %}
+                    <a href="{% url 'exames:ver_resultado' res.id %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">Nenhum resultado anexado.</p>
+    {% endfor %}
+</div>
+{% endblock %}

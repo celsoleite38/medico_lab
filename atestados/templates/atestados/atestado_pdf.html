@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Atestado Médico</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 13px; line-height: 1.6; }
+        .conteudo { white-space: pre-line; }
+        .rodape { margin-top: 80px; text-align: center; }
+        .linha { width: 250px; border-top: 1px solid #333; margin: 0 auto; padding-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="conteudo">{{ atestado.texto_final }}</div>
+    <div class="rodape">
+        <div class="linha">{{ atestado.medico.get_full_name }}</div>
+    </div>
+</body>
+</html>

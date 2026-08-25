@@ -1,0 +1,25 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Anexar Resultado de Exame</h3>
+    <p>Paciente: <strong>{{ paciente.nome }}</strong></p>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Título do resultado</label>
+            {{ form.titulo }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Arquivo (PDF para leitura automática)</label>
+            {{ form.arquivo }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Tipo</label>
+            {{ form.tipo }}
+        </div>
+        <button type="submit" class="btn btn-primary">Anexar e Interpretar</button>
+        <a href="{% url 'prontuario:dados_paciente' id=paciente.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

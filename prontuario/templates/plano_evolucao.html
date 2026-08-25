@@ -40,6 +40,16 @@
 
     <br><br>
 
+    <div class="mb-4">
+        <h5>Documentos do Paciente</h5>
+        <a href="{% url 'receituario:nova_receita_paciente' paciente.id %}" class="btn btn-success mb-2">📋 Nova Receita</a>
+        <a href="{% url 'exames:novo_pedido_paciente' paciente.id %}" class="btn btn-info mb-2">🔬 Novo Pedido de Exame</a>
+        <a href="{% url 'atestados:modelos_atestado_paciente' paciente.id %}" class="btn btn-danger mb-2">📄 Novo Atestado</a>
+        <a href="{% url 'exames:upload_resultado' paciente.id %}" class="btn btn-secondary mb-2">📊 Anexar Resultado</a>
+    </div>
+
+    <br><br>
+
     <div class="fundo-evolucao">
         <h4 class="titulo">Evoluções</h4>
 

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dados do Paciente</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #222; }
+        .cabecalho { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .clinica { text-align: center; font-size: 16px; font-weight: bold; }
+        .medico { margin-top: 6px; text-align: center; color: #555; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; vertical-align: top; }
+        th { background-color: #f0f0f0; width: 30%; }
+        .data-impressao { margin-top: 24px; color: #555; }
+    </style>
+</head>
+<body>
+    {% if perfil %}
+    <div class="cabecalho">
+        <div class="clinica">{{ perfil.nomeclinica|default:"Dados do Paciente" }}</div>
+        <div class="medico">
+            {{ perfil.nome_completo }}{% if perfil.cpf %} &middot; CPF {{ perfil.cpf }}{% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <h2 style="text-align:center;">Dados do Paciente</h2>
+
+    <table>
+        <tr><th>Nome</th><td>{{ paciente.nome }}</td></tr>
+        <tr><th>Sexo</th><td>{{ paciente.sexo }}</td></tr>
+        <tr><th>Estado Civil</th><td>{{ paciente.estadocivil }}</td></tr>
+        <tr><th>Data de Nascimento</th><td>{{ paciente.datanascimento|date:"d/m/Y" }}</td></tr>
+        <tr><th>Naturalidade</th><td>{{ paciente.naturalidade }}</td></tr>
+        <tr><th>Profiss&atilde;o</th><td>{{ paciente.profissao }}</td></tr>
+        <tr><th>E-mail</th><td>{{ paciente.email }}</td></tr>
+        <tr><th>Telefone</th><td>{{ paciente.telefone }}</td></tr>
+        <tr><th>Endere&ccedil;o</th><td>{{ paciente.endereco }}</td></tr>
+    </table>
+
+    <p class="data-impressao">Data de impress&atilde;o: {{ today|date:"d/m/Y" }}</p>
+</body>
+</html>

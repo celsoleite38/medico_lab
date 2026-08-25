@@ -15,10 +15,16 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/auth/logar/', permanent=False)),
     path('evolucoes/', include('evolucoes.urls', namespace='evolucoes')),
     path('prontuario/', include('prontuario.urls', namespace='prontuario')),
-    path('documentos/', include('documentos.urls')),
     path('agenda/', include('agenda.urls',namespace='agenda')),
     path('notificacoes/', include('notificacoes.urls')),
-    
+    path('exames/', include('exames.urls', namespace='exames')),
+    path('receituario/', include('receituario.urls', namespace='receituario')),
+    path('atestados/', include('atestados.urls', namespace='atestados')),
+    path('sugestoes/', include('sugestoes.urls', namespace='sugestoes')),
+    # Páginas de vendas/pagamentos (rotas absolutas como /teste-gratis/ e /pagamento/)
+    # Montado após o redirect de '/' para preservar o comportamento da home.
+    path('', include('paginas_vendas.urls')),
+
 ]
 
 if settings.DEBUG:

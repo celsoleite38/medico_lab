@@ -1,0 +1,41 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Atestados Emitidos</h3>
+
+    <form method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por paciente ou tipo..." value="{{ query }}">
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </div>
+    </form>
+
+    {% for at in atestados %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title mb-1">
+                        <a href="{% url 'prontuario:dados_paciente' id=at.evolucao.paciente.id %}">
+                            {{ at.evolucao.paciente.nome }}
+                        </a>
+                    </h5>
+                    <small class="text-muted">{{ at.modelo.nome }} — {{ at.data_emissao|date:"d/m/Y" }}</small>
+                    {% if at.dias_afastamento %}
+                    <span class="badge badge-warning ml-2">{{ at.dias_afastamento }} dia(s)</span>
+                    {% endif %}
+                    {% if at.cid %}
+                    <span class="badge badge-secondary ml-1">CID: {{ at.cid }}</span>
+                    {% endif %}
+                </div>
+                <a href="{% url 'atestados:atestado_pdf' at.id %}" class="btn btn-sm btn-primary">PDF</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">Nenhum atestado emitido.</p>
+    {% endfor %}
+</div>
+{% endblock %}

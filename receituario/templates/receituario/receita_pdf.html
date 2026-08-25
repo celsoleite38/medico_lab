@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Receita Médica</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; }
+        .cabecalho { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .titulo { text-align: center; font-size: 18px; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; }
+        th { background: #f5f5f5; }
+        .rodape { margin-top: 60px; text-align: center; }
+        .linha { width: 250px; border-top: 1px solid #333; margin: 0 auto; padding-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="cabecalho">
+        {% if perfil.logotipo %}<img src="{{ perfil.logotipo.url }}" height="60" style="margin-bottom:5px;"><br>{% endif %}
+        <strong>{{ perfil.nomeclinica|default:"Médicos Innosoft" }}</strong><br>
+        {{ perfil.nome_completo|default:"" }}<br>
+        {% if perfil.cpf %}CPF: {{ perfil.cpf }}{% endif %}
+        {% if perfil.crefito %} | CRM/CONSELHO: {{ perfil.crefito }}{% endif %}
+    </div>
+
+    <div class="titulo">RECEITUÁRIO MÉDICO</div>
+
+    <p><strong>Paciente:</strong> {{ receita.evolucao.paciente.nome }}</p>
+    <p><strong>Data:</strong> {{ today|date:"d/m/Y" }}</p>
+
+    <table>
+        <thead><tr><th>#</th><th>Medicamento</th><th>Dosagem</th><th>Qtd</th><th>Posologia</th><th>Obs</th></tr></thead>
+        <tbody>
+        {% for item in receita.itens.all %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><strong>{{ item.medicamento.nome }}</strong>{% if item.medicamento.principio_ativo %}<br><small>{{ item.medicamento.principio_ativo }}</small>{% endif %}</td>
+            <td>{{ item.dosagem }}</td>
+            <td>{{ item.quantidade }}</td>
+            <td>{{ item.posologia }}</td>
+            <td>{{ item.observacoes_item }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if receita.observacoes_gerais %}
+    <p style="margin-top:12px;"><strong>Observações:</strong> {{ receita.observacoes_gerais }}</p>
+    {% endif %}
+
+    <div class="rodape">
+        <div class="linha">{{ perfil.nome_completo|default:"" }}</div>
+    </div>
+</body>
+</html>

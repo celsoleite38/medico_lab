@@ -1,20 +1,20 @@
 from collections import defaultdict
-from tkinter import Canvas
+import logging
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.messages import constants
-from django.urls import reverse
+from django.template.loader import render_to_string
+from weasyprint import HTML
 from autenticacao.models import PerfilProfissional
 from evolucoes.models import Evolucao
 from .models import Pacientes, DadosPaciente
 from datetime import date, datetime
 from .forms import PacienteForm
-#from reportlab.pdfgen import canvas
-from django.views.decorators.http import require_GET
 
-from datetime import date, datetime
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='/auth/logar/')
@@ -79,8 +79,8 @@ def pacientes(request):
             return redirect('prontuario:dados_paciente', id=p1.id)  # ← Volta para a lista
            
     
-        except Exception as e:
-            print(f"Erro ao salvar paciente: {e}")  # Para debug
+        except Exception:
+            logger.exception("Erro ao salvar paciente")
             messages.add_message(request, constants.ERROR, 'Erro interno do sistema')
             return redirect('prontuario:pacientes')  # ← CORREÇÃO: volta para a lista
     
@@ -187,6 +187,7 @@ def editar_paciente(request, id):
     return render(request, 'editar_paciente.html', {'paciente': paciente})
             
             
+@login_required(login_url='/auth/logar/')
 def plano_evolucao_listar (request):
     if request.method == "GET":
         pacientes = Pacientes.objects.filter(medico=request.user)
@@ -201,11 +202,9 @@ def plano_evolucao_listar (request):
         
     
         
+@login_required(login_url='/auth/logar/')
 def plano_evolucao(request, id):
-    paciente = get_object_or_404(Pacientes, id=id)
-    if not paciente.medico == request.user:
-        messages.add_message(request, constants.ERROR, 'Esse paciente não é seu')
-        return redirect('/plano_evolucao_listar/')
+    paciente = get_object_or_404(Pacientes, id=id, medico=request.user)
     
     evolucoes = Evolucao.objects.filter(paciente=paciente).order_by("data_criacao")
 
@@ -275,55 +274,43 @@ def evolucao(request, id):  # id = id do paciente
 
 
 
+@login_required(login_url='/auth/logar/')
 def imprimir_paciente(request, id):
-    paciente = get_object_or_404(Pacientes, id=id)
+    paciente = get_object_or_404(Pacientes, id=id, medico=request.user)
 
-    response = HttpResponse(content_type='application/pdf')
+    html_string = render_to_string('imprimir_paciente_pdf.html', {
+        'paciente': paciente,
+        'today': date.today(),
+    })
+    pdf = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{paciente.nome}.pdf"'
-
-    p = canvas.Canvas(response)
-
-    # Criando uma página para cada paciente
-    p.drawString(100, 800, f"Paciente: {paciente.nome}")
-    p.drawString(100, 780, f"Sexo: {paciente.sexo}")
-    p.drawString(100, 760, f"Estado Civil: {paciente.estadocivil}")
-    p.drawString(100, 740, f"Data de Nascimento: {paciente.datanascimento}")
-    p.drawString(100, 720, f"Naturalidade: {paciente.naturalidade}")
-    p.drawString(100, 700, f"Profissão: {paciente.profissao}")
-    p.drawString(100, 680, f"E-mail: {paciente.email}")
-    p.drawString(100, 660, f"Telefone: {paciente.telefone}")
-    p.drawString(100, 640, f"Endereço: {paciente.endereco}")
-
-    # Finaliza a página
-    p.showPage()
-    p.save()
-
     return response
 
 
 #impressao de relatorio - evoluções
+@login_required(login_url='/auth/logar/')
 def imprimir_evolucoes(request, paciente_id):
-    paciente = get_object_or_404(Pacientes, id=paciente_id)
+    paciente = get_object_or_404(Pacientes, id=paciente_id, medico=request.user)
     perfil = PerfilProfissional.objects.filter(usuario=request.user).first()
 
     if request.method == 'POST':
         ids_selecionados = request.POST.getlist('evolucoes')
-        
+
         if ids_selecionados:
-            evolucoes = Evolucao.objects.filter(id__in=ids_selecionados)
+            # Filtra SEMPRE pelo paciente do médico logado (evita acesso a evoluções de outros pacientes)
+            evolucoes = Evolucao.objects.filter(id__in=ids_selecionados, paciente=paciente)
         else:
             evolucoes = Evolucao.objects.filter(paciente=paciente)
-        
-         
-        perfil = PerfilProfissional.objects.filter(usuario=request.user).first()
-        
+
         return render(request, 'relatorio_impressao.html', {
             'paciente': paciente,
             'evolucoes': evolucoes,
             'today': date.today(),
             'perfil': perfil
         })
-    
+
     else:
         evolucoes = Evolucao.objects.filter(paciente=paciente)
         return render(request, 'selecionar_evolucoes.html', {
@@ -334,12 +321,9 @@ def imprimir_evolucoes(request, paciente_id):
 
 @login_required(login_url='/auth/logar/')
 def imprimir_dados_paciente(request, id):
-    paciente = get_object_or_404(Pacientes, id=id)
-    
+    paciente = get_object_or_404(Pacientes, id=id, medico=request.user)
+
     dados_paciente = DadosPaciente.objects.filter(paciente=paciente)
-    if not paciente.medico == request.user:
-        messages.add_message(request, constants.ERROR, 'Acesso negado a este PACIENTE. ')
-        return redirect('/dados_paciente/')
     if request.method == 'POST':
         # Não há nada a fazer aqui, pois não estamos lidando com formulários
         pass

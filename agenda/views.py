@@ -9,12 +9,11 @@ from django.http import JsonResponse, HttpResponseForbidden, HttpResponseBadRequ
 from django.views.decorators.http import require_POST # Para garantir que o cancelamento seja POST
 from datetime import datetime, timedelta
 import json
+import logging
 from django.conf import settings
-from django.contrib.messages import success
-from celery import shared_task
-from django.core.mail import send_mail
-from django.views.generic import TemplateView
 from django.template.loader import render_to_string
+
+logger = logging.getLogger(__name__)
 
 
 # Função auxiliar unificada para obter a cor do status
@@ -41,13 +40,14 @@ class CriarAgendamentoView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.profissional = self.request.user
         response = super().form_valid(form)
-        
+
         # ================================================
-        # 1. ENVIO IMEDIATO VIA WHATSAPP
+        # 1. ENVIO IMEDIATO VIA WHATSAPP (opcional)
+        # Só envia se WHATSAPP_TOKEN e WHATSAPP_BUSINESS_ID estiverem configurados.
         # ================================================
         paciente = form.instance.paciente
         data_formatada = form.instance.data_hora.strftime("%d/%m/%Y às %H:%M")
-        
+
         mensagem_confirmacao = (
             f"*📅 Confirmação de Agendamento - Medicos Innosoft*\n\n"
             f"Olá {paciente.nome},\n\n"
@@ -56,7 +56,7 @@ class CriarAgendamentoView(LoginRequiredMixin, CreateView):
             f"📆 Data/Hora: {data_formatada}\n"
             f"⏳ Duração: {form.instance.duracao} minutos\n\n"
             f"📍 Local: [Endereço da Clínica]\n\n"
-            
+
         )
 
         self.enviar_whatsapp(
@@ -65,21 +65,38 @@ class CriarAgendamentoView(LoginRequiredMixin, CreateView):
         )
 
         # ================================================
-        # 2. AGENDAMENTO DO LEMBRETE (2H ANTES)
+        # 2. AGENDAMENTO DO LEMBRETE (2H ANTES) — opcional, exige broker Celery configurado
         # ================================================
         hora_lembrete = form.instance.data_hora - timedelta(hours=2)
-        agendar_lembrete.apply_async(
-            args=[form.instance.id],
-            eta=hora_lembrete
-        )
+        try:
+            from .tasks import enviar_lembrete_whatsapp
+            enviar_lembrete_whatsapp.apply_async(
+                args=[form.instance.id],
+                eta=hora_lembrete
+            )
+        except Exception as e:
+            # Sem broker Celery configurado, o agendamento continua funcionando sem lembrete
+            logger.warning("Não foi possível agendar lembrete para consulta %s: %s", form.instance.id, e)
 
         return response
 
     def enviar_whatsapp(self, telefone, mensagem):
-        """Função auxiliar para envio via WhatsApp"""
-        url = f"https://graph.facebook.com/v18.0/{settings.WHATSAPP_BUSINESS_ID}/messages"
+        """Envia mensagem via WhatsApp Business API. Não gera erro se não estiver configurado."""
+        business_id = getattr(settings, 'WHATSAPP_BUSINESS_ID', None)
+        token = getattr(settings, 'WHATSAPP_TOKEN', None)
+        if not business_id or not token:
+            logger.info("WhatsApp não configurado (WHATSAPP_TOKEN/WHATSAPP_BUSINESS_ID). Mensagem não enviada.")
+            return
+
+        try:
+            import requests
+        except ImportError:
+            logger.warning("Biblioteca 'requests' não instalada. Mensagem WhatsApp não enviada.")
+            return
+
+        url = f"https://graph.facebook.com/v18.0/{business_id}/messages"
         headers = {
-            "Authorization": f"Bearer {settings.WHATSAPP_TOKEN}",
+            "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
         }
         payload = {
@@ -90,38 +107,15 @@ class CriarAgendamentoView(LoginRequiredMixin, CreateView):
         }
 
         try:
-            response = requests.post(url, headers=headers, json=payload)
+            response = requests.post(url, headers=headers, json=payload, timeout=10)
             if response.status_code != 200:
-                print(f"Erro WhatsApp: {response.text}")
+                logger.error("Erro WhatsApp: %s", response.text)
         except Exception as e:
-            print(f"Falha na API WhatsApp: {e}")
+            logger.error("Falha na API WhatsApp: %s", e)
 
 # ================================================
-# TAREFA CELERY PARA LEMBRETE (RODA 2H ANTES)
+# TAREFA CELERY PARA LEMBRETE (RODA 2H ANTES) — movida para agenda/tasks.py
 # ================================================
-@shared_task
-def agendar_lembrete(consulta_id):
-    from .models import Consulta
-    consulta = Consulta.objects.get(id=consulta_id)
-    
-    if consulta.status == "confirmado":  # Só envia se estiver confirmado
-        mensagem = (
-            f"*⏰ Lembrete de Consulta - Medicos Innosoft*\n\n"
-            f"Olá {consulta.paciente.nome},\n\n"
-            f"Você tem uma consulta em *2 horas*:\n"
-            f"⏰ {consulta.data_hora.strftime('%H:%M')}\n"
-            f"👨⚕️ {consulta.profissional.get_full_name()}\n\n"
-            f"📍 Local: [Endereço da Clínica]\n"
-            f"📞 Contato: [Telefone de Emergência]"
-        )
-        
-        # Reutiliza a função de envio
-        
-        CriarAgendamentoView().enviar_whatsapp(
-            telefone=f"55{consulta.paciente.telefone}",
-            mensagem=mensagem
-        )
-        
 
 class EditarConsultaView(LoginRequiredMixin, UpdateView):
     model = Consulta
@@ -165,6 +159,7 @@ def cancelar_consulta_view(request, pk):
         return JsonResponse({"success": False, "message": f"Ocorreu um erro: {str(e)}"}, status=500)
 # Fim da função cancelar_consulta_view - Certifique-se de que a próxima função está corretamente desindentada.
 
+@login_required
 def detalhes_consulta(request, pk):
     consulta = get_object_or_404(Consulta, pk=pk, profissional=request.user)
     return render(request, "agenda/detalhes_consulta.html", {"consulta": consulta})
@@ -176,6 +171,7 @@ class CalendarioView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         return context
 
+@login_required
 def consultas_json(request):
     consultas = Consulta.objects.filter(profissional=request.user)
     eventos = []
@@ -220,6 +216,7 @@ class RelatorioView(LoginRequiredMixin, TemplateView):
         return super().render_to_response(context, **response_kwargs)
 
 
+@login_required
 def relatorio_parcial(request):
     inicio_semana = datetime.now() - timedelta(days=7)
     consultas = Consulta.objects.filter(profissional=request.user, data_hora__gte=inicio_semana)

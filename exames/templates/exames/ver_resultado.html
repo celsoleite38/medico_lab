@@ -1,0 +1,57 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Resultado: {{ resultado.titulo }}</h3>
+    <p>Paciente: <strong>{{ resultado.paciente.nome }}</strong> | Data: {{ resultado.criado_em|date:"d/m/Y H:i" }}</p>
+
+    {% if alertas %}
+    <div class="alert alert-warning">
+        <strong>⚠ {{ alertas.count }} valor(es) fora da faixa de referência</strong>
+        <ul class="mb-0 mt-2">
+        {% for a in alertas %}
+            <li><strong>{{ a.analito }}:</strong> {{ a.valor }} {{ a.unidade }}
+                {% if a.status == 'alto' %} 🔺 {% elif a.status == 'baixo' %} 🔻 {% endif %}
+                <span class="text-muted">— {{ a.orientacao }}</span>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if resultado.resumo_leitura %}
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">Interpretação Automática</div>
+        <div class="card-body">
+            <pre style="white-space:pre-wrap;font-size:14px;">{{ resultado.resumo_leitura }}</pre>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if medicoes %}
+    <h5>Valores Detectados</h5>
+    <table class="table table-sm table-striped">
+        <thead><tr><th>Analito</th><th>Valor</th><th>Unidade</th><th>Referência</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for m in medicoes %}
+        <tr class="{% if m.status == 'alto' %}table-danger{% elif m.status == 'baixo' %}table-warning{% endif %}">
+            <td><strong>{{ m.analito }}</strong></td>
+            <td>{{ m.valor }}</td>
+            <td>{{ m.unidade }}</td>
+            <td>{{ m.referencia_min|default:"-" }} – {{ m.referencia_max|default:"-" }}</td>
+            <td>
+                {% if m.status == 'normal' %}✅ Normal
+                {% elif m.status == 'alto' %}🔺 Alto
+                {% elif m.status == 'baixo' %}🔻 Baixo
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted">Nenhum valor de referência foi detectado automaticamente no arquivo.</p>
+    {% endif %}
+
+    <a href="{% url 'prontuario:dados_paciente' id=resultado.paciente.id %}" class="btn btn-secondary">Voltar</a>
+</div>
+{% endblock %}

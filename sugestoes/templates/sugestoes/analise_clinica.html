@@ -1,0 +1,78 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Análise Clínica Assistida</h3>
+    <p>Paciente: <strong>{{ paciente.nome }}</strong> | Evolução: {{ evolucao.titulo }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <h5>1. Selecione os sintomas do paciente</h5>
+        <div class="input-group mb-3">
+            <input type="text" id="busca-sintoma" class="form-control"
+                   placeholder="Buscar sintoma..." autocomplete="off">
+        </div>
+        <div id="resultados-sintomas" class="list-group mb-3"></div>
+
+        <div id="sintomas-selecionados" class="mb-4">
+            <h6>Sintomas selecionados:</h6>
+        </div>
+
+        <input type="hidden" name="acao" value="analisar">
+        <button type="submit" class="btn btn-primary">Analisar Causas Prováveis</button>
+        <a href="{% url 'evolucoes:detalhe_evolucao' evolucao.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const busca = document.getElementById('busca-sintoma');
+    const resultados = document.getElementById('resultados-sintomas');
+    const container = document.getElementById('sintomas-selecionados');
+    let selecionados = new Set();
+
+    function buscar() {
+        const q = busca.value;
+        fetch(`/sugestoes/buscar-sintomas/?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                resultados.innerHTML = '';
+                data.forEach(s => {
+                    if (selecionados.has(s.id)) return;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action';
+                    btn.textContent = s.nome;
+                    btn.onclick = () => adicionar(s);
+                    resultados.appendChild(btn);
+                });
+            });
+    }
+
+    function adicionar(s) {
+        selecionados.add(s.id);
+        const badge = document.createElement('span');
+        badge.className = 'badge badge-primary mr-2 mb-2 d-inline-flex align-items-center';
+        badge.style.cssText = 'font-size:13px;padding:6px 10px;';
+        badge.dataset.id = s.id;
+        badge.innerHTML = `${s.nome} <button type="button" class="btn-close btn-close-white ms-2"
+            style="font-size:10px;" onclick="removerSintoma(this, ${s.id})" aria-label="Remover">×</button>`;
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'sintomas';
+        input.value = s.id;
+        badge.appendChild(input);
+        container.appendChild(badge);
+        resultados.innerHTML = '';
+        busca.value = '';
+    }
+
+    window.removerSintoma = function(btn, id) {
+        selecionados.delete(id);
+        btn.closest('.badge').remove();
+    };
+
+    busca.addEventListener('input', () => { if(busca.value.length >= 2) buscar(); });
+});
+</script>
+{% endblock %}

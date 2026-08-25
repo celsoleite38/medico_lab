@@ -34,6 +34,16 @@
     <a href="{% url 'prontuario:imprimir_dados_paciente' paciente.id %}" class="btn btn-outline-success"> 
         🖨️ Imprimir Dados do Paciente
     </a>
+    
+    <br><br>
+    
+    <div class="mb-4">
+        <h5>Ações Rápidas</h5>
+        <a href="{% url 'receituario:lista_receitas' %}" class="btn btn-success mb-2">📋 Receituário</a>
+        <a href="{% url 'exames:lista_pedidos' %}" class="btn btn-info mb-2">🔬 Pedidos de Exames</a>
+        <a href="{% url 'atestados:lista_atestados' %}" class="btn btn-danger mb-2">📄 Atestados</a>
+        <a href="{% url 'exames:lista_resultados' %}" class="btn btn-secondary mb-2">📊 Resultados</a>
+    </div>
         
     <br>
     <br>

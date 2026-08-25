@@ -1,0 +1,43 @@
+{% extends 'base_prontuario.html' %}
+{% block 'prontuario' %}
+<div class="container mt-4">
+    <h3 class="titulo">Pedidos de Exames</h3>
+
+    <form method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por paciente ou exame..." value="{{ query }}">
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </div>
+    </form>
+
+    {% for pedido in pedidos %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h5 class="card-title mb-1">
+                        <a href="{% url 'prontuario:dados_paciente' id=pedido.evolucao.paciente.id %}">
+                            {{ pedido.evolucao.paciente.nome }}
+                        </a>
+                    </h5>
+                    <small class="text-muted">Pedido #{{ pedido.id }} — {{ pedido.data_pedido|date:"d/m/Y" }}</small>
+                    {% if pedido.justificativa_clinica %}
+                    <p class="mt-2 mb-1"><strong>Justificativa:</strong> {{ pedido.justificativa_clinica }}</p>
+                    {% endif %}
+                    <div>
+                        {% for item in pedido.itens.all %}
+                        <span class="badge badge-info">{{ item.exame.nome }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <a href="{% url 'exames:pedido_exame_pdf' pedido.id %}" class="btn btn-sm btn-primary">PDF</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">Nenhum pedido de exame encontrado.</p>
+    {% endfor %}
+</div>
+{% endblock %}
