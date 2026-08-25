@@ -18,6 +18,60 @@ logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='/auth/logar/')
+def dashboard(request):
+    from django.utils import timezone
+    from django.db.models import Count
+
+    hoje = timezone.localdate()
+    inicio_semana = hoje - timezone.timedelta(days=hoje.weekday())
+
+    total_pacientes = Pacientes.objects.filter(medico=request.user).count()
+
+    consultas_hoje_qs = []
+    consultas_hoje_total = 0
+    consultas_confirmadas = 0
+    resumo_semana = []
+    try:
+        from agenda.models import Consulta
+
+        consultas_hoje_qs = (
+            Consulta.objects.filter(profissional=request.user, data_hora__date=hoje)
+            .select_related('paciente')
+            .order_by('data_hora')
+        )
+        consultas_hoje_total = consultas_hoje_qs.count()
+        consultas_confirmadas = consultas_hoje_qs.filter(status__in=['confirmado', 'realizado']).count()
+
+        dias_semana = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
+        for i in range(7):
+            dia = inicio_semana + timezone.timedelta(days=i)
+            qtd = Consulta.objects.filter(profissional=request.user, data_hora__date=dia).count()
+            resumo_semana.append({'label': dias_semana[i], 'qtd': qtd, 'altura': min(60, qtd * 12 + 6)})
+    except Exception:
+        logger.exception('Falha ao carregar dados de agenda no dashboard')
+
+    exames_pendentes = 0
+    try:
+        from exames.models import PedidoExame
+
+        exames_pendentes = PedidoExame.objects.filter(medico=request.user).count()
+    except Exception:
+        logger.exception('Falha ao carregar dados de exames no dashboard')
+
+    total_consultas_semana = sum(item['qtd'] for item in resumo_semana)
+
+    return render(request, 'dashboard.html', {
+        'total_pacientes': total_pacientes,
+        'consultas_hoje': consultas_hoje_qs,
+        'consultas_hoje_total': consultas_hoje_total,
+        'consultas_confirmadas': consultas_confirmadas,
+        'exames_pendentes': exames_pendentes,
+        'resumo_semana': resumo_semana,
+        'total_consultas_semana': total_consultas_semana,
+    })
+
+
+@login_required(login_url='/auth/logar/')
 def pacientes(request):
     
     if request.method == "GET":

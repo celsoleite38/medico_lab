@@ -168,5 +168,5 @@ WHATSAPP_BUSINESS_ID = os.environ.get('WHATSAPP_BUSINESS_ID', '')
 MERCADO_PAGO_ACCESS_TOKEN = os.environ.get('MERCADO_PAGO_ACCESS_TOKEN', '')
 
 LOGIN_URL = '/auth/logar/'
-LOGIN_REDIRECT_URL = '/prontuario/pacientes/'
+LOGIN_REDIRECT_URL = '/prontuario/dashboard/'
 LOGOUT_REDIRECT_URL = '/auth/logar/'

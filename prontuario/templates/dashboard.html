@@ -1,0 +1,93 @@
+{% extends 'base_prontuario.html' %}
+{% load static %}
+
+{% block 'titulo' %}Dashboard — Medik{% endblock %}
+{% block 'titulo_pagina' %}Bom dia, {{ perfil.nome_completo|default:user.username }}{% endblock %}
+
+{% block 'prontuario' %}
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-card-label">
+            <span class="stat-card-icon" style="background:var(--brand-50); color:var(--brand-600);"><i class="far fa-calendar-alt"></i></span>
+            Consultas hoje
+        </div>
+        <div class="stat-card-value">{{ consultas_hoje_total }}</div>
+        <div class="stat-card-hint">{{ consultas_confirmadas }} confirmadas</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-label">
+            <span class="stat-card-icon" style="background:var(--blue-50); color:var(--blue-600);"><i class="fas fa-user-friends"></i></span>
+            Pacientes
+        </div>
+        <div class="stat-card-value">{{ total_pacientes }}</div>
+        <div class="stat-card-hint">Total cadastrados</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-label">
+            <span class="stat-card-icon" style="background:var(--amber-50); color:var(--amber-600);"><i class="fas fa-vial"></i></span>
+            Pedidos de exame
+        </div>
+        <div class="stat-card-value">{{ exames_pendentes }}</div>
+        <div class="stat-card-hint">Emitidos por você</div>
+    </div>
+</div>
+
+<div class="row" style="margin: 0 -8px;">
+    <div class="col-lg-8" style="padding: 0 8px; margin-bottom: 16px;">
+        <div class="surface-card">
+            <div class="surface-card-header">
+                <h2>Consultas do dia</h2>
+                <a href="{% url 'agenda:calendario' %}" style="font-size:13px; font-weight:600;">Ver agenda <i class="fas fa-arrow-right" style="font-size:11px;"></i></a>
+            </div>
+
+            {% if consultas_hoje %}
+                {% for consulta in consultas_hoje %}
+                    <div class="appt-row">
+                        <div class="appt-time">{{ consulta.data_hora|time:"H:i" }}</div>
+                        <div class="appt-info">
+                            <p class="appt-name">{{ consulta.paciente.nome }}</p>
+                            <p class="appt-meta">{{ consulta.get_status_display }} · {{ consulta.duracao }} min</p>
+                        </div>
+                        <span class="badge-pill {% if consulta.status == 'confirmado' or consulta.status == 'realizado' %}badge-brand{% elif consulta.status == 'cancelado' %}badge-red{% else %}badge-amber{% endif %}">
+                            {{ consulta.get_status_display }}
+                        </span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted" style="margin:0;">Nenhuma consulta agendada para hoje.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4" style="padding: 0 8px; margin-bottom: 16px;">
+        <div class="surface-card" style="margin-bottom:16px;">
+            <div class="surface-card-header">
+                <h2>Acesso rápido</h2>
+            </div>
+            <a href="{% url 'prontuario:pacientes' %}" class="sidebar-link" style="padding-left:0;"><i class="fas fa-user-friends"></i> Pacientes</a>
+            <a href="{% url 'prontuario:plano_evolucao_listar' %}" class="sidebar-link" style="padding-left:0;"><i class="fas fa-notes-medical"></i> Prontuário</a>
+            <a href="{% url 'receituario:lista_receitas' %}" class="sidebar-link" style="padding-left:0;"><i class="fas fa-prescription"></i> Receituário</a>
+            <a href="{% url 'exames:lista_pedidos' %}" class="sidebar-link" style="padding-left:0;"><i class="fas fa-vial"></i> Pedidos de exames</a>
+        </div>
+
+        <div class="surface-card">
+            <div class="surface-card-header">
+                <h2>Resumo da semana</h2>
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:8px; height:70px; margin-bottom:10px;">
+                {% for dia in resumo_semana %}
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+                        <div style="width:100%; max-width:22px; height:{{ dia.altura }}px; background:var(--brand-400); border-radius:4px;"></div>
+                        <span style="font-size:11px; color:var(--text-muted);">{{ dia.label }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            <p class="stat-card-hint" style="margin:0;">{{ total_consultas_semana }} consultas nesta semana</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -5,6 +5,7 @@ from .views import editar_paciente
 app_name = 'prontuario'
 
 urlpatterns = [
+    path('dashboard/', views.dashboard, name="dashboard"),
     path('pacientes/', views.pacientes, name="pacientes"),
     path('dados_paciente/', views.dados_paciente_listar, name="dados_paciente_listar"),
     path('dados_paciente/<str:id>/', views.dados_paciente, name="dados_paciente"),
